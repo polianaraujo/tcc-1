@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: tcc_lakehouse
+    schema: bronze
+    tables:
+      - name: RAW_olist_orders_dataset
+      - name: RAW_olist_order_items_dataset
+      - name: RAW_olist_sellers_dataset
+      - name: RAW_olist_order_reviews_dataset

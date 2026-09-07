@@ -1,0 +1,4 @@
+venv_tcc/
+dataset_tcc/
+logs/
+.DS_Store
