@@ -2,3 +2,7 @@ venv_tcc/
 dataset_tcc/
 logs/
 .DS_Store
+.gitignore
+rsa_key.p8
+rsa_key.pub
+.env
