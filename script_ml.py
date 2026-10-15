@@ -159,47 +159,7 @@ if __name__ == "__main__":
     probs_xgb_cenario_a = resultados_a["XGBoost"]["y_prob"]
     probs_xgb_cenario_b = resultados_b["XGBoost"]["y_prob"]
 
-    # --- GRÁFICO 1: BARRAS COM INTERVALO DE CONFIANÇA (ATUALIZADO) ---
-    print("Gerando gráfico de barras (IC 95%)...")
-    fig_bar, ax_bar = plt.subplots(figsize=(10, 6))
-    
-    modelos_labels = ['Reg. Logística', 'Random Forest', 'XGBoost']
-    medias_a, erros_a, medias_b, erros_b = [], [], [], []
-    
-    for mod in modelos_labels:
-        m_a, lo_a, hi_a = bootstrap_auc_ci(resultados_a[mod]["y_test"], resultados_a[mod]["y_prob"])
-        medias_a.append(m_a)
-        erros_a.append(hi_a - m_a) 
-        
-        m_b, lo_b, hi_b = bootstrap_auc_ci(resultados_b[mod]["y_test"], resultados_b[mod]["y_prob"])
-        medias_b.append(m_b)
-        erros_b.append(hi_b - m_b)
-        
-    x = np.arange(len(modelos_labels))
-    width = 0.35
-    
-    bar_a = ax_bar.bar(x - width/2, medias_a, width, yerr=erros_a, capsize=5, label='Cenário A (Com Vazamento)', color='#1f77b4')
-    bar_b = ax_bar.bar(x + width/2, medias_b, width, yerr=erros_b, capsize=5, label='Cenário B (Point-in-Time)', color='#ff7f0e')
-    ax_bar.axhline(y=0.5, color='red', linestyle='--', linewidth=2, label='Acaso (0.50)')
-    
-    # Adicionando os valores numéricos no topo das barras
-    ax_bar.bar_label(bar_a, fmt='%.2f', padding=5, fontsize=10)
-    ax_bar.bar_label(bar_b, fmt='%.2f', padding=5, fontsize=10)
-    
-    # Adicionando o asterisco para os modelos onde o IC cruza 0.50
-    ax_bar.text(0 + width/2, 0.46, '* IC cruza o acaso', ha='center', va='bottom', color='black', fontsize=9, fontstyle='italic')
-    ax_bar.text(1 + width/2, 0.46, '* IC cruza o acaso', ha='center', va='bottom', color='black', fontsize=9, fontstyle='italic')
-
-    ax_bar.set_ylabel('ROC-AUC Média', fontsize=12)
-    ax_bar.set_title('Impacto do Point-in-Time Correctness na Performance dos Modelos (IC 95%)', fontsize=14, pad=15)
-    ax_bar.set_xticks(x)
-    ax_bar.set_xticklabels(modelos_labels, fontsize=11)
-    ax_bar.set_ylim(0.45, 0.72) # Limite ligeiramente expandido para caber os rótulos
-    ax_bar.legend(loc='upper left')
-    ax_bar.grid(axis='y', linestyle='--', alpha=0.6)
-    
-    fig_bar.tight_layout()
-    fig_bar.savefig('assets/image_794c61.png', dpi=300)
+    # O gráfico de barras com IC 95% é gerado por gerar_graficos_tcc.py (assets/ic95_roc_auc.png)
 
     # --- GRÁFICO 2: CURVAS ROC E PR-AUC (ATUALIZADO) ---
     print("Gerando curvas ROC e PR-AUC...")
@@ -240,7 +200,8 @@ if __name__ == "__main__":
     ax2.grid(alpha=0.3)
 
     fig_curves.tight_layout()
-    fig_curves.savefig('assets/image_78fae6.png', dpi=300)
+    fig_curves.savefig('assets/curvas_roc_pr_xgboost.png', dpi=300)
+    print("Curvas salvas em assets/curvas_roc_pr_xgboost.png!")
 
     # --- GRÁFICO 3: FEATURE IMPORTANCE ("A ARMA DO CRIME") ---
     print("Gerando gráfico de Feature Importance...")
@@ -252,19 +213,20 @@ if __name__ == "__main__":
     importances_b = resultados_b["XGBoost"]["modelo"].feature_importances_
     
     y_pos = np.arange(len(features))
+    width = 0.35
     
     ax_feat.barh(y_pos + width/2, importances_a, width, label='Cenário A (Com Vazamento)', color='#1f77b4')
     ax_feat.barh(y_pos - width/2, importances_b, width, label='Cenário B (Point-in-Time)', color='#ff7f0e')
     
     ax_feat.set_yticks(y_pos)
     ax_feat.set_yticklabels(features, fontsize=11)
-    ax_feat.set_xlabel('Importância Relativa (F-Score)', fontsize=12)
+    ax_feat.set_xlabel('Importância Relativa (Ganho)', fontsize=12)
     ax_feat.set_title('Deslocamento de Importância das Variáveis (XGBoost)', fontsize=14, pad=15)
     ax_feat.legend()
     ax_feat.grid(axis='x', linestyle='--', alpha=0.6)
     
     fig_feat.tight_layout()
-    fig_feat.savefig('assets/feature_importance.png', dpi=300)
-    print("Gráfico de Feature Importance salvo em assets/feature_importance.png!")
+    fig_feat.savefig('assets/feature_importance_xgboost.png', dpi=300)
+    print("Gráfico de Feature Importance salvo em assets/feature_importance_xgboost.png!")
     
     print("\nPipeline de Machine Learning finalizada com sucesso!")

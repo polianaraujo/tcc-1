@@ -181,7 +181,8 @@ Validação *out-of-time*: treino nos 80% de pedidos mais antigos e teste nos 20
 - **Desempenho do `ASOF JOIN`:** foi de 16 a 81× mais rápido que a subconsulta correlacionada e o *non-equi join* no próprio Snowflake. Com 10× mais dados, o tempo dele apenas dobrou (0,080 s → 0,166 s), enquanto as alternativas cresceram de 6 a 11×.
 
 ![ROC-AUC com IC 95%](assets/ic95_roc_auc.png)
-![Curvas ROC e Precision-Recall do XGBoost](assets/image_78fae6.png)
+![Curvas ROC e Precision-Recall do XGBoost](assets/curvas_roc_pr_xgboost.png)
+![Importância das variáveis no XGBoost](assets/feature_importance_xgboost.png)
 ![Ablação de variáveis](assets/ablacao_xgboost.png)
 ![Benchmark das junções point-in-time](assets/benchmark_joins.png)
 
