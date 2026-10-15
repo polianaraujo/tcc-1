@@ -1,8 +1,38 @@
+# Ambientes virtuais
 venv_tcc/
-dataset_tcc/
-logs/
-.DS_Store
-.gitignore
+.venv/
+venv/
+
+# Credenciais e segredos (NUNCA versionar)
+.env
+*.p8
 rsa_key.p8
 rsa_key.pub
-.env
+
+# Dados brutos (baixar do Kaggle; ver README)
+dataset_tcc/
+
+# Airflow: arquivos gerados localmente
+# airflow.cfg contém a secret_key do webserver; airflow.db é o banco de metadados local
+airflow-tcc/airflow.cfg
+airflow-tcc/airflow.db
+airflow-tcc/*.db
+airflow-tcc/logs/
+airflow-tcc/webserver_config.py
+airflow-tcc/*.pid
+airflow-tcc/standalone_admin_password.txt
+logs/
+
+# dbt (complementa tcc_feature_store/.gitignore)
+tcc_feature_store/target/
+tcc_feature_store/dbt_packages/
+tcc_feature_store/logs/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Sistema
+.DS_Store
+Thumbs.db

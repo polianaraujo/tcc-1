@@ -1,0 +1,4 @@
+estrategia,linhas,linhas_diferentes_do_asof
+ASOF JOIN,97817,0
+Subconsulta correlacionada,97817,77
+Non-equi join + QUALIFY,97817,81

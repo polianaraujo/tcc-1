@@ -6,6 +6,14 @@ sources:
     schema: bronze
     tables:
       - name: RAW_olist_orders_dataset
+        quoting:
+          identifier: true
       - name: RAW_olist_order_items_dataset
+        quoting:
+          identifier: true
       - name: RAW_olist_sellers_dataset
+        quoting:
+          identifier: true
       - name: RAW_olist_order_reviews_dataset
+        quoting:
+          identifier: true

@@ -1,0 +1,11 @@
+cryptography==50.0.0
+dbt-core==1.12.3
+dbt-snowflake==1.12.0
+matplotlib==3.11.1
+numpy==2.5.3
+pandas==2.3.3
+pyarrow==25.0.1
+python-dotenv==1.2.3
+scikit-learn==1.9.0
+snowflake-connector-python==4.7.2
+xgboost==3.4.1
