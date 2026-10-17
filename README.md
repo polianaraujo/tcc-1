@@ -163,7 +163,7 @@ python analise_vazamento.py
 python bootstrap_pareado.py      # análises estatísticas complementares (fora da DAG)
 python avaliacao_cruzada.py      # avaliação cruzada entre cenários (fora da DAG)
 python ablacao_pareada.py        # ablação com IC pareados (fora da DAG)
-python benchmark_joins.py        # opcional: escalas 1x e 10x, ~5 min em X-Small
+python benchmark_joins.py        # opcional: escalas 1x e 10x, ~5 min em X-Small; requer a tabela legada GOLD_SELLER_FEATURES (ver Limitações)
 python gerar_graficos_tcc.py
 ```
 
@@ -198,6 +198,7 @@ Validação *out-of-time*: treino nos 80% de pedidos mais antigos e teste nos 20
 - **Ingestão fora da DAG:** a carga da camada Bronze foi feita uma única vez, fora do Airflow.
 - **Instantes de disponibilidade:** vêm das datas do próprio *dataset* (entrega e resposta da avaliação). Um sistema real teria ainda atrasos operacionais de registro.
 - **Mudança na taxa de atraso:** ela cai de 7,5% no treino para 3,4% no teste. A mudança afeta igualmente os dois cenários.
+- **Tabela legada do *benchmark*:** `benchmark_joins.py` lê `TCC_LAKEHOUSE.GOLD.GOLD_SELLER_FEATURES` (97.817 linhas, uma por par pedido–vendedor, de 2.970 vendedores), a versão preliminar da *Feature Store* com uma versão do estado do vendedor por pedido. Nenhum modelo dbt atual a gera: ela foi criada em 12/10/2026 por uma versão intermediária do modelo `gold_seller_features`, removido do repositório no commit `a470729` (o arquivo no histórico, de 06/09/2026, não é idêntico à versão que gerou a tabela). Os resultados do *benchmark* estão salvos em `assets/benchmark_joins_*.csv`, mas o *script* só pode ser reexecutado enquanto essa tabela existir no Snowflake. Não a apague e não crie um modelo com esse nome sem refazer o *benchmark*, pois o `dbt run` a sobrescreveria.
 
 ## Tecnologias
 
