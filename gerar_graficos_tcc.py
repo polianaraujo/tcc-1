@@ -40,27 +40,31 @@ def grafico_ic95():
     cenario_a = [(0.5821, 0.5605, 0.6024), (0.6765, 0.6588, 0.6951), (0.6778, 0.6593, 0.6970)]
     cenario_b = [(0.4936, 0.4713, 0.5146), (0.5110, 0.4886, 0.5317), (0.5124, 0.4900, 0.5352)]
 
+    # Gráfico de pontos com barras de erro (e não de barras): a ROC-AUC não tem origem em zero
+    # (o acaso é 0,5), então barras truncadas exagerariam visualmente as diferenças.
     x = np.arange(len(modelos))
-    w = 0.36
+    desl = 0.12
     fig, ax = plt.subplots(figsize=(10, 6))
     for dados, desloc, cor, rotulo in [
-        (cenario_a, -w / 2, COR_A, "Cenário A (Com Vazamento)"),
-        (cenario_b, +w / 2, COR_B, "Cenário B (Point-in-Time)"),
+        (cenario_a, -desl, COR_A, "Cenário A (Com Vazamento)"),
+        (cenario_b, +desl, COR_B, "Cenário B (Point-in-Time)"),
     ]:
         media = np.array([d[0] for d in dados])
         erro_inf = media - np.array([d[1] for d in dados])   # barras de erro assimétricas
         erro_sup = np.array([d[2] for d in dados]) - media
-        ax.bar(x + desloc, media, w, color=cor, label=rotulo,
-               yerr=[erro_inf, erro_sup], capsize=5)
-        for xi, (m, _, sup) in zip(x + desloc, dados):
-            ax.text(xi, sup + 0.004, f"{m:.3f}", ha="center", va="bottom", fontsize=10)
+        ax.errorbar(x + desloc, media, yerr=[erro_inf, erro_sup], fmt="o", color=cor,
+                    ecolor=cor, markersize=9, elinewidth=2.2, capsize=6, capthick=2.2,
+                    label=rotulo, zorder=3)
+        for xi, (m, _, _) in zip(x + desloc, dados):
+            ax.text(xi + 0.05, m, f"{m:.3f}", ha="left", va="center", fontsize=10)
 
-    ax.axhline(0.5, color=COR_ACASO, ls="--", lw=2, label="Acaso (0.50)")
+    ax.axhline(0.5, color=COR_ACASO, ls="--", lw=2, label="Acaso (0.50)", zorder=1)
     ax.set_title("Impacto do Point-in-Time Correctness na Performance dos Modelos (IC 95%)", fontsize=14, pad=15)
     ax.set_xticks(x)
     ax.set_xticklabels(modelos, fontsize=11)
+    ax.set_xlim(-0.5, len(modelos) - 0.5)
     ax.set_ylim(0.45, 0.73)
-    ax.set_ylabel("ROC-AUC Média", fontsize=12)
+    ax.set_ylabel("ROC-AUC (média do bootstrap)", fontsize=12)
     ax.grid(axis="y", ls="--", alpha=0.6)
     ax.legend(loc="upper left")
     fig.tight_layout()
@@ -90,23 +94,35 @@ def grafico_ablacao(caminho="assets/ablacao_xgboost.csv"):
     df = pd.read_csv(caminho)
     rotulos = [_rotulo_curto(c) for c in df["configuracao"]]
     y = np.arange(len(df))[::-1]          # primeira configuração no topo
-    h = 0.36
-    base = 0.44                           # barras começam em 0,44 para dar zoom
+    desl = 0.17
 
+    # Gráfico de pontos com barras de erro (e não de barras): a ROC-AUC não tem origem em zero
+    # (o acaso é 0,5), então barras truncadas exagerariam visualmente as diferenças.
     fig, ax = plt.subplots(figsize=(10, 6.5))
-    for cen, desloc, cor, nome in [("A", +h / 2, COR_A, "Cenário A (Com Vazamento)"),
-                                   ("B", -h / 2, COR_B, "Cenário B (Point-in-Time)")]:
+    for cen, desloc, cor, nome in [("A", +desl, COR_A, "Cenário A (Com Vazamento)"),
+                                   ("B", -desl, COR_B, "Cenário B (Point-in-Time)")]:
         auc = df[f"AUC_{cen}"].to_numpy()
         ics = np.array([_ler_ic(t) for t in df[f"IC95_{cen}"]])
-        ax.barh(y + desloc, auc - base, h, left=base, color=cor, label=nome,
-                xerr=[auc - ics[:, 0], ics[:, 1] - auc], capsize=4)
+        ax.errorbar(auc, y + desloc, xerr=[auc - ics[:, 0], ics[:, 1] - auc], fmt="o", color=cor,
+                    ecolor=cor, markersize=8, elinewidth=2.2, capsize=5, capthick=2.2,
+                    label=nome, zorder=3)
+        for xi, yi, inf, sup in zip(auc, y + desloc, ics[:, 0], ics[:, 1]):
+            if sup < 0.5:   # intervalo inteiro abaixo do acaso: rótulo à esquerda, para não cruzar a linha de 0,5
+                ax.text(inf - 0.004, yi, f"{xi:.3f}", ha="right", va="center", fontsize=9)
+            else:
+                ax.text(sup + 0.004, yi, f"{xi:.3f}", ha="left", va="center", fontsize=9)
 
-    ax.axvline(0.5, color=COR_ACASO, ls="--", lw=2, label="Acaso (0.50)")
+    # Separadores entre os grupos: todas as variáveis / sem cada variável / somente cada variável
+    for pos in (len(df) - 1.5, len(df) - 4.5):
+        ax.axhline(pos, color="0.6", lw=0.8)
+
+    ax.axvline(0.5, color=COR_ACASO, ls="--", lw=2, label="Acaso (0.50)", zorder=1)
     ax.set_title("Ablação de Variáveis: ROC-AUC do XGBoost (IC 95%)", fontsize=14, pad=15)
     ax.set_yticks(y)
     ax.set_yticklabels(rotulos, fontsize=11)
-    ax.set_xlim(base, 0.73)
-    ax.set_xlabel("ROC-AUC no Conjunto de Teste", fontsize=12)
+    ax.set_xlim(0.42, 0.75)
+    ax.set_ylim(-0.6, len(df) - 0.4)
+    ax.set_xlabel("ROC-AUC no Conjunto de Teste (estimativa pontual e IC 95%)", fontsize=12)
     ax.grid(axis="x", ls="--", alpha=0.6)
     ax.legend(loc="lower right")
     fig.tight_layout()
