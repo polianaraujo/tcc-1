@@ -62,6 +62,9 @@ O histórico é derivado dos próprios eventos com funções de janela cumulativ
 ├── airflow-tcc/dags/dag_tcc.py     # DAG de orquestração
 ├── script_ml.py                    # treino e avaliação (RF, Reg. Logística, XGBoost) + gráficos
 ├── analise_vazamento.py            # diferença A vs B pedido a pedido + ablação de variáveis
+├── bootstrap_pareado.py            # IC pareados (A-B, entre modelos), bootstrap por vendedores, PR-AUC, diagnósticos
+├── avaliacao_cruzada.py            # treino em A/B e teste em A/B (mede o training-serving skew)
+├── ablacao_pareada.py              # ablação com IC pareados e AUC univariada treino x teste
 ├── benchmark_joins.py              # ASOF JOIN vs subconsulta correlacionada vs non-equi join vs pandas
 ├── gerar_graficos_tcc.py           # gráficos de IC 95%, ablação e benchmark
 ├── verificacao_pos_dbt.sql         # checagens de integridade e de consistência temporal
@@ -157,13 +160,16 @@ executar_modelos_dbt  ──►  treinar_modelo_xgboost
 cd tcc_feature_store && dbt run && cd ..
 python script_ml.py
 python analise_vazamento.py
+python bootstrap_pareado.py      # análises estatísticas complementares (fora da DAG)
+python avaliacao_cruzada.py      # avaliação cruzada entre cenários (fora da DAG)
+python ablacao_pareada.py        # ablação com IC pareados (fora da DAG)
 python benchmark_joins.py        # opcional: escalas 1x e 10x, ~5 min em X-Small
 python gerar_graficos_tcc.py
 ```
 
 ### 6. Verificação
 
-Depois do `dbt run`, execute `verificacao_pos_dbt.sql` no Snowsight. A última consulta é um **teste de consistência temporal**: conta quantos pedidos do Cenário B "enxergam" um atraso que ainda não havia sido entregue no instante da compra. **O resultado esperado é 0.**
+Depois do `dbt run`, execute `verificacao_pos_dbt.sql` no Snowsight. As consultas 4 a 6 são **testes de consistência temporal** do Cenário B: contam quantos pedidos "enxergam" um atraso ainda não entregue, um volume ou uma nota média que não correspondem ao estado do vendedor estritamente antes da compra. **O resultado esperado é 0** nas três. A consulta 7 é o controle positivo (as mesmas consultas aplicadas ao Cenário A devem retornar muitas violações) e a 8 mede quantos registros do Cenário B recebem nota 0 por falta de avaliação.
 
 ## Resultados
 

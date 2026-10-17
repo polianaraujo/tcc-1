@@ -35,3 +35,48 @@ WHERE b.seller_delay_count > (
     WHERE p.seller_id = b.seller_id
       AND p.order_delivered_at < b.data_do_pedido
 );
+
+-- 5) Mesmo teste para o VOLUME: o volume recebido deve ser exatamente o número de pedidos do
+--    vendedor com compra ESTRITAMENTE anterior à data do pedido.  (esperado: 0)
+SELECT COUNT(*) AS violacoes
+FROM gold_dataset_b_point_in_time b
+WHERE b.seller_order_volume <> (
+    SELECT COUNT(*)
+    FROM gold_pedidos_vendedor p
+    WHERE p.seller_id = b.seller_id
+      AND p.order_purchase_at < b.data_do_pedido
+);
+
+-- 6) Mesmo teste para a NOTA MÉDIA: deve ser a média das notas cujas avaliações foram RESPONDIDAS
+--    estritamente antes da data do pedido (0 se não houver nenhuma).  (esperado: 0)
+SELECT COUNT(*) AS violacoes
+FROM gold_dataset_b_point_in_time b
+WHERE ABS(b.seller_avg_review_score - (
+    SELECT COALESCE(AVG(p.review_score), 0)
+    FROM gold_pedidos_vendedor p
+    WHERE p.seller_id = b.seller_id
+      AND p.review_score IS NOT NULL
+      AND p.review_answered_at < b.data_do_pedido
+)) > 1e-6;
+
+-- 7) CONTROLE POSITIVO: as mesmas consultas 4, 5 e 6, trocando gold_dataset_b_point_in_time por
+--    gold_dataset_a_leakage, devem retornar muitas violações (o Cenário A usa o estado final do
+--    vendedor). Para o atraso, espera-se ≈ 79,3 mil (81,06% de 97.817, Tabela de diferenças).
+--    Isso mostra que os testes são capazes de detectar vazamento.
+
+-- 8) Quantos registros do Cenário B têm SELLER_AVG_REVIEW_SCORE = 0?  Como as notas vão de 1 a 5, a
+--    média só é 0 quando o vendedor não tem nenhuma avaliação respondida antes da compra (o 0 vem do
+--    COALESCE do modelo). Resultado por conjunto, com o mesmo corte 80/20 usado nos experimentos.
+WITH ordenado AS (
+    SELECT *,
+           ROW_NUMBER() OVER (ORDER BY data_do_pedido, order_id, seller_id) AS rn,
+           COUNT(*)     OVER ()                                              AS n
+    FROM gold_dataset_b_point_in_time
+)
+SELECT IFF(rn <= FLOOR(n * 0.8), 'treino', 'teste')                          AS conjunto,
+       COUNT(*)                                                              AS registros,
+       SUM(IFF(seller_avg_review_score = 0, 1, 0))                           AS nota_zero,
+       ROUND(100 * AVG(IFF(seller_avg_review_score = 0, 1, 0)), 2)           AS pct_nota_zero
+FROM ordenado
+GROUP BY 1
+ORDER BY 1 DESC;
