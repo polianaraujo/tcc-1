@@ -1,0 +1,19 @@
+Conexão estabelecida com sucesso usando chave RSA!
+Baixando datasets e base de eventos...
+
+Corte (primeiro pedido do teste): 2018-05-27 16:26:55
+Treino: 78253 pedidos; 2148 (2.74%) foram entregues depois do corte (rótulo desconhecido no corte).
+  base / Cenário A: treino com 78253 pedidos
+  base / Cenário B: treino com 78253 pedidos
+  purga / Cenário A: treino com 76105 pedidos
+  purga / Cenário B: treino com 76105 pedidos
+  purga+15 / Cenário A: treino com 74759 pedidos
+  purga+15 / Cenário B: treino com 74759 pedidos
+  purga+30 / Cenário A: treino com 71245 pedidos
+  purga+30 / Cenário B: treino com 71245 pedidos
+  purga+60 / Cenário A: treino com 64466 pedidos
+  purga+60 / Cenário B: treino com 64466 pedidos
+
+(Reamostragens por linhas e por vendedores e tabela completa de resultados: ver purga_resguardo.csv.)
+
+Finalizado! CSV salvo em assets/purga_resguardo.csv

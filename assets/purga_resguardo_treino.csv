@@ -1,0 +1,11 @@
+config,cenario,n_treino,taxa_atraso_treino
+base,A,78253,0.0751
+base,B,78253,0.0751
+purga,A,76105,0.0703
+purga,B,76105,0.0703
+purga+15,A,74759,0.0716
+purga+15,B,74759,0.0716
+purga+30,A,71245,0.0747
+purga+30,B,71245,0.0747
+purga+60,A,64466,0.0781
+purga+60,B,64466,0.0781
