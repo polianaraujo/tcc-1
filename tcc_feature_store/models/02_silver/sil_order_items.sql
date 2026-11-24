@@ -1,4 +1,7 @@
--- Aqui vamos garantir que preços e fretes não sejam nulos ou negativos, além de formatar a data de limite de envio.
+-- Renomeia as colunas, converte preço e frete para FLOAT e mantém apenas itens com preço positivo
+-- (o frete não é filtrado: o valor 0 é válido).
+-- Não há deduplicação: um pedido pode ter vários itens do mesmo vendedor (repetição legítima).
+-- A Gold colapsa isso com SELECT DISTINCT (order_id, seller_id) em gold_pedidos_vendedor.
 
 
 {{ config(materialized='table') }}

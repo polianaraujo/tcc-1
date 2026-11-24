@@ -1,4 +1,6 @@
 -- As avaliações serão usadas depois para calcular, por exemplo, a "nota média do vendedor no último mês".
+-- Não há deduplicação: um pedido pode ter mais de uma avaliação (repetição legítima, com notas possivelmente diferentes).
+-- A Gold agrega por order_id (AVG da nota e MAX do instante da resposta) em gold_pedidos_vendedor.
 
 
 {{ config(materialized='table') }}

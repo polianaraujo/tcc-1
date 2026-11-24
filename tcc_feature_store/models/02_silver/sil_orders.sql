@@ -1,4 +1,7 @@
--- Este modelo limpa a tabela de pedidos. Vamos remover linhas onde as datas cruciais estão nulas (porque um pedido sem data quebra qualquer Feature Store temporal) e garantir que tudo seja TIMESTAMP.
+-- Este modelo limpa a tabela de pedidos: renomeia as colunas de data e remove linhas sem data de compra
+-- (um pedido sem data de compra quebra qualquer Feature Store temporal).
+-- Os nulos de entrega são mantidos de propósito: a Gold usa order_delivered_at IS NULL para excluir pedidos sem desfecho observável.
+-- Não há conversão de tipo (a Bronze já traz as datas como TIMESTAMP_NTZ) nem deduplicação (order_id é único).
 
 
 {{ config(materialized='table') }}
