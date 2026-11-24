@@ -65,6 +65,7 @@ O histórico é derivado dos próprios eventos com funções de janela cumulativ
 ├── bootstrap_pareado.py            # IC pareados (A-B, entre modelos), bootstrap por vendedores, PR-AUC, diagnósticos
 ├── avaliacao_cruzada.py            # treino em A/B e teste em A/B (mede o training-serving skew)
 ├── ablacao_pareada.py              # ablação com IC pareados e AUC univariada treino x teste
+├── purga_resguardo.py              # purga e resguardo na partição temporal (vazamento residual de rótulo)
 ├── benchmark_joins.py              # ASOF JOIN vs subconsulta correlacionada vs non-equi join vs pandas
 ├── gerar_graficos_tcc.py           # gráficos de IC 95%, ablação e benchmark
 ├── verificacao_pos_dbt.sql         # checagens de integridade e de consistência temporal
@@ -163,6 +164,7 @@ python analise_vazamento.py
 python bootstrap_pareado.py      # análises estatísticas complementares (fora da DAG)
 python avaliacao_cruzada.py      # avaliação cruzada entre cenários (fora da DAG)
 python ablacao_pareada.py        # ablação com IC pareados (fora da DAG)
+python purga_resguardo.py        # purga e resguardo da partição temporal (fora da DAG)
 python benchmark_joins.py        # opcional: escalas 1x e 10x, ~5 min em X-Small; requer a tabela legada GOLD_SELLER_FEATURES (ver Limitações)
 python gerar_graficos_tcc.py
 ```
@@ -184,6 +186,7 @@ Validação *out-of-time*: treino nos 80% de pedidos mais antigos e teste nos 20
 - **No Cenário A** os modelos parecem úteis: a PR-AUC do XGBoost é 2,75× a linha de base. **No Cenário B** todos são estatisticamente indistinguíveis do acaso, com a PR-AUC praticamente igual à taxa de positivos.
 - **Diferença pedido a pedido:** 100% dos registros têm ao menos uma variável diferente entre A e B.
 - **Ablação:** a contagem de atrasos é o principal vetor de vazamento. Removê-la reduz em 75% a diferença entre os cenários. Sem vazamento, a melhor combinação de variáveis (atrasos + notas) atinge apenas 0,553.
+- **Vazamento residual de rótulo:** a partição por data do pedido deixa pedidos de treino com rótulo ainda desconhecido no corte (entregues depois dele). A purga desses pedidos, com resguardos de 15, 30 e 60 dias (`purga_resguardo.py`, resultados em `assets/purga_resguardo.csv`), alterou a ROC-AUC em no máximo 0,017 e manteve positiva a diferença A − B (de 0,088 a 0,188, conforme modelo e configuração).
 - **Desempenho do `ASOF JOIN`:** foi de 16 a 81× mais rápido que a subconsulta correlacionada e o *non-equi join* no próprio Snowflake. Com 10× mais dados, o tempo dele apenas dobrou (0,080 s → 0,166 s), enquanto as alternativas cresceram de 6 a 11×.
 
 ![ROC-AUC com IC 95%](assets/ic95_roc_auc.png)
@@ -198,6 +201,8 @@ Validação *out-of-time*: treino nos 80% de pedidos mais antigos e teste nos 20
 - **Ingestão fora da DAG:** a carga da camada Bronze foi feita uma única vez, fora do Airflow.
 - **Instantes de disponibilidade:** vêm das datas do próprio *dataset* (entrega e resposta da avaliação). Um sistema real teria ainda atrasos operacionais de registro.
 - **Mudança na taxa de atraso:** ela cai de 7,5% no treino para 3,4% no teste. A mudança afeta igualmente os dois cenários.
+- **Sem período de resguardo na partição principal:** o experimento principal não separa treino e teste por um intervalo. A purga e o resguardo foram avaliados à parte, como análise de sensibilidade.
+- **Verificações fora da DAG:** as verificações de consistência temporal (`verificacao_pos_dbt.sql`) e as análises estatísticas complementares são executadas manualmente.
 - **Tabela legada do *benchmark*:** `benchmark_joins.py` lê `TCC_LAKEHOUSE.GOLD.GOLD_SELLER_FEATURES` (97.817 linhas, uma por par pedido–vendedor, de 2.970 vendedores), a versão preliminar da *Feature Store* com uma versão do estado do vendedor por pedido. Nenhum modelo dbt atual a gera: ela foi criada em 12/10/2026 por uma versão intermediária do modelo `gold_seller_features`, removido do repositório no commit `a470729` (o arquivo no histórico, de 06/09/2026, não é idêntico à versão que gerou a tabela). Os resultados do *benchmark* estão salvos em `assets/benchmark_joins_*.csv`, mas o *script* só pode ser reexecutado enquanto essa tabela existir no Snowflake. Não a apague e não crie um modelo com esse nome sem refazer o *benchmark*, pois o `dbt run` a sobrescreveria.
 
 ## Tecnologias
