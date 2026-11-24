@@ -1,6 +1,6 @@
 # Arquitetura Lakehouse e Feature Store Temporal: Mitigação de Data Leakage em Pipelines de MLOps
 
-Código-fonte do Trabalho de Conclusão de Curso em Engenharia de Computação (UFRN) de **Poliana Ellen de Araújo**, sob orientação do **Prof. Dr. Carlos Manuel Dias Viegas**.
+Código-fonte do meu Trabalho de Conclusão de Curso em Engenharia de Computação (UFRN), sob orientação do **Prof. Dr. Carlos Manuel Dias Viegas**.
 
 O projeto implementa uma **Feature Store temporal** sobre um *Lakehouse* no Snowflake, com transformações no dbt e orquestração no Apache Airflow. Ele mede empiricamente o efeito do **vazamento temporal de dados** (*time-travel data leakage*) comparando dois *datasets* construídos a partir das mesmas variáveis:
 
