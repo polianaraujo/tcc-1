@@ -109,6 +109,7 @@ SNOWFLAKE_ACCOUNT=...
 SNOWFLAKE_WAREHOUSE=...
 SNOWFLAKE_DATABASE=TCC_LAKEHOUSE
 SNOWFLAKE_SCHEMA=GOLD
+SNOWFLAKE_PRIVATE_KEY_PATH=rsa_key.p8
 ```
 
 `rsa_key.p8` e `.env` estão no `.gitignore` e **nunca** devem ser versionados.
